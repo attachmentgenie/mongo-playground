@@ -1,0 +1,5 @@
+classes:
+  - epel
+  - remi
+  - repoforge
+  - role_playground

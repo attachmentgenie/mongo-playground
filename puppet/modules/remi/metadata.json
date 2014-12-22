@@ -1,0 +1,26 @@
+{
+  "project_page": "https://github.com/lboynton/puppet-remi",
+  "version": "0.0.1",
+  "description": "Sets up remi repository on CentOS/RHEL",
+  "license": "Apache License, Version 2.0",
+  "summary": "Sets up remi repository on CentOS/RHEL",
+  "dependencies": [
+    {
+      "version_requirement": "0.0.x",
+      "name": "stahnma/epel"
+    }
+  ],
+  "name": "lboynton-remi",
+  "source": "https://github.com/lboynton/puppet-remi",
+  "checksums": {
+    "files/RPM-GPG-KEY-remi": "3abb4e5a7b1408c888e19f718c012630",
+    "README.md": "e684eb6849b515c08779e49f6f68b69a",
+    "manifests/init.pp": "bd8e32d14ce9bfe22f24e19c2f7270ae",
+    "CHANGELOG": "bc62d68c7cd23e0a72c67d2d6c84ca0b",
+    "Modulefile": "0b6e6432851813cd3a9f6e88cde780e1"
+  },
+  "author": "lboynton",
+  "types": [
+
+  ]
+}
