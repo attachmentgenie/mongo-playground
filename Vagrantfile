@@ -43,7 +43,9 @@ Vagrant.configure("2") do |config|
     playground.vm.hostname = "playground.vagrant.local"
     playground.vm.network :private_network, ip: "192.168.42.42"
     playground.vm.provider("virtualbox") { |v| v.name = "playground" }
-    playground.vm.synced_folder 'db-perf-test', '/opt/db-perf-test',
+    playground.vm.synced_folder 'testbench', '/opt/testbench',
+      owner: "vagrant", group: "vagrant"
+    playground.vm.synced_folder 'virt', '/opt/virt',
       owner: "vagrant", group: "vagrant"
   end
 end
