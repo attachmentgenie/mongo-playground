@@ -1,1 +1,2 @@
 .vagrant
+/virt/docker/*.js
