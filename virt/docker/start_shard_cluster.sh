@@ -133,6 +133,7 @@ fi
 for i in $(seq 1 $SHARDS)
 do
   echo "Creating Shard ${i} of $SHARDS"
+  echo "Creating Shard ${i} of $SHARDS"
   ID=$(docker ps | grep rs${i}_srv1 |  awk '{print $1}')
   if [[ -z "$ID" ]]; then
     echo "Creating container rs${i}_srv1."
@@ -201,58 +202,58 @@ do
   else
     echo "Container rs${i}_srv3 exists."
   fi
-
+  
   ID=$(mongo --port $(docker-port rs${i}_srv1) --eval "printjson(rs.status().ok)" | tail -1)
   if [ "$ID" -eq "1" ]; then
     echo "Replication set rs${i} is active."
   else
     echo "Creating replication set rs${i}"
     rm -f rs${i}.js
-    cat <<EOF > rs${i}.js
-    config = {_id: 'rs${i}', members: [
-    {_id: 0, host: '$(docker-ip rs${i}_srv1)'},
-    {_id: 1, host: '$(docker-ip rs${i}_srv2)'},
-    {_id: 2, host: '$(docker-ip rs${i}_srv3)'}]
-  }
-  rs.initiate(config);
-  EOF
-  mongo --port $(docker-port rs${i}_srv1) < rs${i}.js
-  attempt=0
-  while [ $attempt -le 59 ]; do
-    attempt=$(( $attempt + 1 ))
-    echo "Waiting for Replication set to be up (attempt: $attempt)..."
-    result=$(mongo --port $(docker-port rs${i}_srv1) --eval "printjson(rs.status().ok)" | tail -1)
-    if [ "$result" -eq "1" ]; then
-      echo "Replication set is up!"
-      break
-    fi
-    sleep 2
-  done
+cat <<EOF > rs${i}.js
+  config = {_id: 'rs${i}', members: [
+  {_id: 0, host: '$(docker-ip rs${i}_srv1)'},
+  {_id: 1, host: '$(docker-ip rs${i}_srv2)'},
+  {_id: 2, host: '$(docker-ip rs${i}_srv3)'}]
+}
+rs.initiate(config);
+EOF
+    mongo --port $(docker-port rs${i}_srv1) < rs${i}.js
+    attempt=0
+    while [ $attempt -le 59 ]; do
+      attempt=$(( $attempt + 1 ))
+      echo "Waiting for Replication set to be up (attempt: $attempt)..."
+      result=$(mongo --port $(docker-port rs${i}_srv1) --eval "printjson(rs.status().ok)" | tail -1)
+      if [ "$result" -eq "1" ]; then
+        echo "Replication set is up!"
+        break
+      fi
+      sleep 2
+    done
 
-  attempt=0
-  while [ $attempt -le 59 ]; do
-    attempt=$(( $attempt + 1 ))
-    echo "Waiting for primary to be elected (attempt: $attempt)..."
-    result=$(mongo --port $(docker-port rs${i}_srv1) --eval "printjson(rs.status().myState)" | tail -1)
-    if [ "$result" -eq "1" ]; then
-      echo "Election has taken place!"
-      break
-    fi
-    sleep 2
-  done
-fi
+    attempt=0
+    while [ $attempt -le 59 ]; do
+      attempt=$(( $attempt + 1 ))
+      echo "Waiting for primary to be elected (attempt: $attempt)..."
+      result=$(mongo --port $(docker-port rs${i}_srv1) --eval "printjson(rs.status().myState)" | tail -1)
+      if [ "$result" -eq "1" ]; then
+        echo "Election has taken place!"
+        break
+      fi
+      sleep 2
+    done
+  fi
 
-ID=$(mongo --port $(docker-port mongos1) --eval "printjson(sh.status())")
-if grep -q "rs${i}" <<< $ID ; then
-  echo "Shard rs${i} is present."
-else
-  echo "Adding rs${i} as shard to cluster."
-  rm -f sh.js
-  cat <<EOF > rs${i}_sh.js
-  sh.addShard("rs${i}/$(docker-ip rs${i}_srv1):27017")
-  EOF
-  mongo --port $(docker-port mongos1) < rs${i}_sh.js
-fi
+  ID=$(mongo --port $(docker-port mongos1) --eval "printjson(sh.status())")
+  if grep -q "rs${i}" <<< $ID ; then
+    echo "Shard rs${i} is present."
+  else
+    echo "Adding rs${i} as shard to cluster."
+    rm -f sh.js
+cat <<EOF > rs${i}_sh.js
+sh.addShard("rs${i}/$(docker-ip rs${i}_srv1):27017")
+EOF
+    mongo --port $(docker-port mongos1) < rs${i}_sh.js
+  fi
 done
 
 echo "MongoDB Cluster is now ready to use."
