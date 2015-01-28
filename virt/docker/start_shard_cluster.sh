@@ -1,11 +1,19 @@
 #!/bin/bash
 set -e;
 
+SHARDS=${1:2}
+
+echo "$(SHARDS)"
+
 docker-ip() {
   docker inspect --format '{{ .NetworkSettings.IPAddress }}' "$@"
 }
 
-echo "MongoDB Cluster is being setup."
+docker-port() {
+  docker port $@ 27017|cut -d ":" -f2
+}
+
+echo "Creating mongodb shard cluster."
 
 if (( EUID != 0 )); then
   echo "You must have sudo permissions to do this."
@@ -14,112 +22,169 @@ fi
 
 IMAGE=$(sudo docker images | grep "attachmentgenie/mongodb " |  awk '{print $3}')
 if [[ -z $IMAGE ]]; then
+  echo "Creating image attachmentgenie/mongodb."
   sudo docker build -t attachmentgenie/mongodb mongod
 fi
 
 IMAGE=$(sudo docker images | grep "attachmentgenie/mongos " |  awk '{print $3}')
 if [[ -z $IMAGE ]]; then
+  echo "Creating image attachmentgenie/mongos."
   sudo docker build -t attachmentgenie/mongos mongos
 fi
 
 ID=$(docker ps | grep rs1_srv1 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container rs1_srv1."
   sudo docker run \
   -P --name rs1_srv1 \
   -d attachmentgenie/mongodb \
   --replSet rs1 \
   --noprealloc --smallfiles
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs rs1_srv1)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
 ID=$(docker ps | grep rs1_srv2 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container rs1_srv2."
   sudo docker run \
   -P --name rs1_srv2 \
   -d attachmentgenie/mongodb \
   --replSet rs1 \
   --noprealloc --smallfiles
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs rs1_srv2)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
 ID=$(docker ps | grep rs1_srv3 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container rs1_srv3."
   sudo docker run \
   -P --name rs1_srv3 \
   -d attachmentgenie/mongodb \
   --replSet rs1 \
   --noprealloc --smallfiles
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs rs1_srv3)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
-echo "waiting 30s..."
-sleep 30
+echo "Creating rs1"
 rm -f rs1.js
 cat <<EOF > rs1.js
-rs.initiate()
+config = {_id: 'rs1', members: [
+                      {_id: 0, host: '$(docker-ip rs1_srv1)'},
+                      {_id: 1, host: '$(docker-ip rs1_srv2)'},
+                      {_id: 2, host: '$(docker-ip rs1_srv3)'}]
+}
+rs.initiate(config);
 EOF
-mongo --port $(docker port rs1_srv1 27017|cut -d ":" -f2) < rs1.js
-
-echo "waiting 30s..."
-sleep 30
-rm -f rs1conf.js
-cat <<EOF > rs1conf.js
-rs.add("$(docker-ip rs1_srv2):27017")
-rs.add("$(docker-ip rs1_srv3):27017")
-cfg = rs.conf()
-cfg.members[0].host = "$(docker-ip rs1_srv1):27017"
-rs.reconfig(cfg)
-rs.status()
-EOF
-mongo --port $(docker port rs1_srv1 27017|cut -d ":" -f2) < rs1conf.js
+mongo --port $(docker-port rs1_srv1) < rs1.js
 
 ID=$(docker ps | grep rs2_srv1 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container rs2_srv1."
   sudo docker run \
   -P --name rs2_srv1 \
   -d attachmentgenie/mongodb \
   --replSet rs2 \
   --noprealloc --smallfiles
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs rs2_srv1)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
 ID=$(docker ps | grep rs2_srv2 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container rs2_srv2."
   sudo docker run \
   -P --name rs2_srv2 \
   -d attachmentgenie/mongodb \
   --replSet rs2 \
   --noprealloc --smallfiles
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs rs2_srv2)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
 ID=$(docker ps | grep rs2_srv3 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container rs2_srv3."
   sudo docker run \
   -P --name rs2_srv3 \
   -d attachmentgenie/mongodb \
   --replSet rs2 \
   --noprealloc --smallfiles
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs rs2_srv3)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
-echo "waiting 30s..."
-sleep 30
+echo "Creating rs2"
 rm -f rs2.js
 cat <<EOF > rs2.js
-rs.initiate()
+config = {_id: 'rs2', members: [
+{_id: 0, host: '$(docker-ip rs2_srv1)'},
+{_id: 1, host: '$(docker-ip rs2_srv2)'},
+{_id: 2, host: '$(docker-ip rs2_srv3)'}]
+}
+rs.initiate(config);
 EOF
-mongo --port $(docker port rs2_srv1 27017|cut -d ":" -f2) < rs2.js
-
-echo "waiting 30s..."
-sleep 30
-rm -f rs2conf.js
-cat <<EOF > rs2conf.js
-rs.add("$(docker-ip rs2_srv2):27017")
-rs.add("$(docker-ip rs2_srv3):27017")
-cfg = rs.conf()
-cfg.members[0].host = "$(docker-ip rs2_srv1):27017"
-rs.reconfig(cfg)
-rs.status()
-EOF
-mongo --port $(docker port rs2_srv1 27017|cut -d ":" -f2) < rs2conf.js
+mongo --port $(docker-port rs2_srv1) < rs2.js
 
 ID=$(docker ps | grep cfg1 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container cfg1."
   sudo docker run \
   -P --name cfg1 \
   -d attachmentgenie/mongodb \
@@ -127,10 +192,22 @@ if [[ -z "$ID" ]]; then
   --configsvr \
   --dbpath /data/db \
   --port 27017
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs cfg1)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
 ID=$(docker ps | grep cfg2 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container cfg2."
   sudo docker run \
   -P --name cfg2 \
   -d attachmentgenie/mongodb \
@@ -138,10 +215,22 @@ if [[ -z "$ID" ]]; then
   --configsvr \
   --dbpath /data/db \
   --port 27017
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs cfg2)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
 ID=$(docker ps | grep cfg3 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container cfg3."
   sudo docker run \
   -P --name cfg3 \
   -d attachmentgenie/mongodb \
@@ -149,29 +238,48 @@ if [[ -z "$ID" ]]; then
   --configsvr \
   --dbpath /data/db \
   --port 27017
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs cfg3)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
-echo "waiting 60s..."
-sleep 60
 ID=$(docker ps | grep mongos1 |  awk '{print $1}')
 if [[ -z "$ID" ]]; then
+  echo "Creating container mongos1."
   sudo docker run \
   -P --name mongos1 \
   -d attachmentgenie/mongos \
   --port 27017 \
   --configdb $(docker-ip cfg1):27017,$(docker-ip cfg2):27017,$(docker-ip cfg3):27017
+  attempt=0
+  while [ $attempt -le 59 ]; do
+    attempt=$(( $attempt + 1 ))
+    echo "Waiting for server to be up (attempt: $attempt)..."
+    result=$(docker logs mongos1)
+    if grep -q 'waiting for connections on port 27017' <<< $result ; then
+      echo "Mongodb is up!"
+      break
+    fi
+    sleep 2
+  done
 fi
 
-echo "waiting 60s..."
-sleep 60
 rm -f sh.js
 cat <<EOF > sh.js
 sh.addShard("rs1/$(docker-ip rs1_srv1):27017")
 sh.addShard("rs2/$(docker-ip rs2_srv1):27017")
 sh.status()
 EOF
-mongo --port $(docker port mongos1 27017|cut -d ":" -f2) < sh.js
+mongo --port $(docker-port mongos1) < sh.js
 
 echo "MongoDB Cluster is now ready to use."
 echo "Connect to cluster by:"
-echo "$ mongo --port $(docker port mongos1 27017|cut -d ":" -f2)"
+echo "$ mongo --port $(docker-port mongos1)"
