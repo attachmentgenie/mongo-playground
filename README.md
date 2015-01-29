@@ -4,27 +4,15 @@ A basic centos 6.5 virtual machine that can be useful when experimenting with mo
 setups. The box includes a basic mongo installation, php an python language bindings
 and several scripts to quickly start a replication set or even a full sharded cluster using docker.
 
-## Requirements
-  virtualbox
-  vagrant
-
-## Install
-
-``` bash
-vagrant up
-```
-
 ## Connect to mongo server in vagrant box
 
 ``` bash
-vagrant ssh
 mongo
 ```
 
 ## Start a replication set using docker
 
 ``` bash
-vagrant ssh
 [vagrant@playground ~]$ cd testbench/bin/
 [vagrant@playground bin]$ ./start_replset.sh
 Creating Mongodb Replication Set.
@@ -87,7 +75,6 @@ $ mongo --port 49178
 ## Start a sharded cluster using docker
 
 ``` bash
-vagrant ssh
 cd testbench/bin
 [vagrant@playground bin]$ ./start_shard_cluster.sh
 How many shards do you want to create : 3
