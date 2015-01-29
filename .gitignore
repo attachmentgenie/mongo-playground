@@ -1,2 +1,2 @@
-.vagrant
-/virt/docker/*.js
+/.vagrant/
+/testbench/bin/*.js
