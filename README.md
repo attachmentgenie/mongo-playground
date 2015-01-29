@@ -2,7 +2,7 @@
 
 A basic centos 6.5 virtual machine that can be useful when experimenting with mongdb
 setups. The box includes a basic mongo installation, php an python language bindings
-and several scripts to quickly start a replication set or even a full sharded cluster.
+and several scripts to quickly start a replication set or even a full sharded cluster using docker.
 
 ## Requirements
 virtualbox
