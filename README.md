@@ -5,8 +5,8 @@ setups. The box includes a basic mongo installation, php an python language bind
 and several scripts to quickly start a replication set or even a full sharded cluster using docker.
 
 ## Requirements
-virtualbox
-vagrant
+  virtualbox
+  vagrant
 
 ## Install
 
@@ -90,8 +90,8 @@ $ mongo --port 49178
 vagrant ssh
 cd testbench/bin
 [vagrant@playground bin]$ ./start_shard_cluster.sh
-How many shards do you want to create : 2
-Creating Mongodb cluster with 2 shards.
+How many shards do you want to create : 3
+Creating Mongodb cluster with 3 shards.
 .....
 MongoDB Cluster is now ready to use
 --- Sharding Status ---
