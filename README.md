@@ -75,7 +75,7 @@ $ mongo --port 49178
 ## Start a sharded cluster using docker
 
 ``` bash
-cd testbench/bin
+[vagrant@playground ~]$ cd testbench/bin/
 [vagrant@playground bin]$ ./start_shard_cluster.sh
 How many shards do you want to create : 3
 Creating Mongodb cluster with 3 shards.
