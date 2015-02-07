@@ -15,7 +15,7 @@ create_cfg_srv() {
     echo "Creating container cfg${@}."
     sudo docker run \
     -P --name cfg${@} \
-    -d attachmentgenie/mongodb \
+    -d mongo:latest \
     --noprealloc --smallfiles \
     --configsvr \
     --dbpath /data/db \
@@ -40,6 +40,11 @@ create_mongos_srv() {
   ID=$(sudo docker ps | grep mongos${@} |  awk '{print $1}')
   if [[ -z "$ID" ]]; then
     echo "Creating container mongos${@}."
+    IMAGE=$(sudo docker images | grep "attachmentgenie/mongos " |  awk '{print $3}')
+    if [[ -z $IMAGE ]]; then
+      echo "Creating image attachmentgenie/mongos."
+      sudo docker build -t attachmentgenie/mongos virt/docker/mongos
+    fi
     sudo docker run \
     -P --name mongos1 \
     -d attachmentgenie/mongos \
@@ -67,7 +72,7 @@ create_rs_srv() {
     echo "Creating container rs${1}_srv${2}."
     sudo docker run \
     -P --name rs${1}_srv${2} \
-    -d attachmentgenie/mongodb \
+    -d mongo:latest \
     --replSet rs${1} \
     --noprealloc --smallfiles
     attempt=0
@@ -95,18 +100,6 @@ echo "Creating Mongodb cluster with $SHARDS shards."
 if (( EUID != 0 )); then
   echo "You must have sudo permissions to do this."
   sudo -v
-fi
-
-IMAGE=$(sudo docker images | grep "attachmentgenie/mongodb " |  awk '{print $3}')
-if [[ -z $IMAGE ]]; then
-  echo "Creating image attachmentgenie/mongodb."
-  sudo docker build -t attachmentgenie/mongodb virt/docker/mongod
-fi
-
-IMAGE=$(sudo docker images | grep "attachmentgenie/mongos " |  awk '{print $3}')
-if [[ -z $IMAGE ]]; then
-  echo "Creating image attachmentgenie/mongos."
-  sudo docker build -t attachmentgenie/mongos virt/docker/mongos
 fi
 
 for cfg in $(seq 1 3)

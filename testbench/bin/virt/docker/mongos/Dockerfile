@@ -1,4 +1,4 @@
-FROM attachmentgenie/mongodb:latest
+FROM mongo:latest
 
 EXPOSE 27017
-ENTRYPOINT ["usr/bin/mongos"]
+ENTRYPOINT ["mongos"]

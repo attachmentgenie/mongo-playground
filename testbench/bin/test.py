@@ -37,7 +37,7 @@ SEED_DATA = [
 
 ### Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
 
-MONGODB_URI = 'mongodb://localhost:27017/test_py'
+MONGODB_URI = 'mongodb://127.0.0.1:27017/test_py'
 
 ###############################################################################
 # main

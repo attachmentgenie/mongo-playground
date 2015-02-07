@@ -15,7 +15,7 @@ create_rs_srv() {
     echo "Creating container ${1}_srv${2}."
     sudo docker run \
     -P --name ${1}_srv${2} \
-    -d attachmentgenie/mongodb \
+    -d mongo:latest \
     --replSet ${1} \
     --noprealloc --smallfiles
     attempt=0
@@ -46,12 +46,6 @@ read -e -i "$DEFAULT" -p "MongoDB Replication Set name : " INPUT
 RSNAME="${INPUT:-$DEFAULT}"
 
 echo "Creating MongoDB Replication Set named ${RSNAME}."
-
-IMAGE=$(sudo docker images | grep "attachmentgenie/mongodb " |  awk '{print $3}')
-if [[ -z $IMAGE ]]; then
-  echo "Creating image attachmentgenie/mongodb."
-  sudo docker build -t attachmentgenie/mongodb virt/docker/mongod
-fi
 
 for ID in $(seq 1 3)
 do

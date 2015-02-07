@@ -35,7 +35,7 @@ $seedData = array(
 * Standard single-node URI format:
 * mongodb://[username:password@]host:port/[database]
 */
-$uri = "mongodb://localhost:27017/test_php";
+$uri = "mongodb://127.0.0.1:27017/test_php";
 $options = array("connectTimeoutMS" => 30000);
 
 /*
