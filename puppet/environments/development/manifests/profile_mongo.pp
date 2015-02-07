@@ -7,6 +7,6 @@ class profile_mongo {
   class {'::mongodb::client': }
 
   package { 'mongodb-org-tools' :
-    ensure => 'present'
+    ensure => 'present',
   }
 }

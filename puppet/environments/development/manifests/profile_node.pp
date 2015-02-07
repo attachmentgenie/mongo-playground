@@ -1,8 +1,10 @@
 class profile_node {
 
-  class { 'nodejs': }
-
-  package { 'nodejs-mongodb':
+  class { 'nodejs':
+    manage_repo => true,
+  } ->
+  package { 'mongodb':
     ensure   => present,
+    provider => 'npm',
   }
 }

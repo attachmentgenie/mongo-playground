@@ -1,14 +1,9 @@
 class profile_ruby {
 
-  package { 'ruby-devel':
-    ensure   => present,
+  class { 'ruby':
+    gems_version  => 'latest'
   } ->
-  package { 'bson_ext':
+  package { 'ruby-mongo':
     ensure   => present,
-    provider => 'gem',
-  } ->
-  package { 'mongodb':
-    ensure   => present,
-    provider => 'gem',
   }
 }

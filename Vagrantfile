@@ -6,11 +6,12 @@ Vagrant.configure("2") do |config|
 ###############################################################################
 # Base box                                                                    #
 ###############################################################################
-  config.vm.box = "puppetlabs/centos-6.5-64-puppet"
+  config.vm.box = "puppetlabs/ubuntu-14.04-64-puppet"
 
 ###############################################################################
 # Global provisioning settings                                                #
 ###############################################################################
+  config.vm.provision "shell",inline: "sudo apt-get update"
   config.vm.synced_folder 'hiera/', '/var/lib/hiera'
   config.vm.provision :puppet do |puppet|
     default_env = 'development'
@@ -38,7 +39,6 @@ Vagrant.configure("2") do |config|
 ###############################################################################
 # VM definitions                                                              #
 ###############################################################################
-  # Web server
   config.vm.define :playground do |playground|
     playground.vm.hostname = "playground.vagrant.local"
     playground.vm.network :private_network, ip: "192.168.42.42"

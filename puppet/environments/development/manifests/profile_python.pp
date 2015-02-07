@@ -1,7 +1,9 @@
 class profile_python {
 
   class { 'python' :
-    dev        => true,
+    dev => true,
+  } ->
+  package { 'python-pymongo':
+    ensure => 'present',
   }
-  python::pip { 'pymongo': }
 }
