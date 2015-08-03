@@ -15,7 +15,7 @@ create_rs_srv() {
     echo "Creating container ${1}_srv${2}."
     sudo docker run \
     -P --name ${1}_srv${2} \
-    -d mongo:latest \
+    -d mongo:${3} \
     --replSet ${1} \
     --noprealloc --smallfiles
     attempt=0
@@ -45,11 +45,16 @@ DEFAULT="rs1"
 read -e -i "$DEFAULT" -p "MongoDB Replication Set name : " INPUT
 RSNAME="${INPUT:-$DEFAULT}"
 
+DEFAULT="latest"
+read -e -i "$DEFAULT" -p "MongoDB Version : " INPUT
+VERSION="${INPUT:-$DEFAULT}"
+
+
 echo "Creating MongoDB Replication Set named ${RSNAME}."
 
 for ID in $(seq 1 3)
 do
-  create_rs_srv ${RSNAME} ${ID}
+  create_rs_srv ${RSNAME} ${ID} ${VERSION}
 done
 
 ID=$(mongo --port $(docker-port ${RSNAME}_srv1) --eval "printjson(rs.status().ok)" | tail -1)

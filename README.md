@@ -1,6 +1,6 @@
 # Mongo Playground
 
-A basic centos 6.5 virtual machine that can be useful when experimenting with mongdb setups.
+A basic Ubuntu 14.04 virtual machine that can be useful when experimenting with mongdb setups.
 The box includes a basic mongo installation, nodejs, php, python and ruby language bindings
 as well as bootstrap scripts to quickly start a replication set or a sharded cluster using docker.
 

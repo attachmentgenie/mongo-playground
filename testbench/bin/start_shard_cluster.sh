@@ -15,7 +15,7 @@ create_cfg_srv() {
     echo "Creating container cfg${@}."
     sudo docker run \
     -P --name cfg${@} \
-    -d mongo:latest \
+    -d mongo:2.6 \
     --noprealloc --smallfiles \
     --configsvr \
     --dbpath /data/db \
@@ -72,7 +72,7 @@ create_rs_srv() {
     echo "Creating container rs${1}_srv${2}."
     sudo docker run \
     -P --name rs${1}_srv${2} \
-    -d mongo:latest \
+    -d mongo:2.6 \
     --replSet rs${1} \
     --noprealloc --smallfiles
     attempt=0
